@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 //#include "simulated_input.h"
-#include <math.h>
+
 
 typedef struct dict{
     char* string;
