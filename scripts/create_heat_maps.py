@@ -8,7 +8,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1 import AxesGrid
 import argparse
 
-'''Parses the NIST output files'''
+'''
+Parses the NIST output files
+output:
+    a dictionary that will be the filename is the key and the value at the index is the pass rate.
+'''
 
 def parse_files():
     data_to_file = {}
@@ -31,9 +35,15 @@ def parse_files():
 
 '''
 Calculates difference in bits in in the file before and after applying Moonshine
+input:
+    k = filename of a completed moonshine application
+    s = the name of the set as a string
+    data = the dictionary contiaing all filenames as keys
+output:
+    percentage of data remaining of the given file as a float
 '''
 
-def get_data_retained(k, s, sets, data):
+def get_data_retained(k, s, data):
     for j in data.keys():
         if s in j.lower() and "before" in j:
             total_before = 0
@@ -49,3 +59,184 @@ def get_data_retained(k, s, sets, data):
 
             percent = (total_before-total_after)/total_before
             return percent
+
+
+'''
+This method creates all of the comparison heatmaps for the NIST test pass rates.
+input:
+    data = ditctionary where the key is the filename and the value at the index is the pass rate of the file.
+'''
+
+def heatmap_passrate(data):
+
+    font = {'family' : 'normal',
+            'size'   : 18}
+
+    plt.rc('font', **font)
+    plt.rc('text', usetex=True)
+
+    sets = []
+    passing_rates = examine_data(data)
+    for s in data.keys():
+        lst = s.split("_")
+        if "10" in lst[0] or "11" in lst[0] or "12" in lst[0]:
+            if lst[0][2:].lower() not in sets and "before" not in s:
+                sets.append(lst[0][2:].lower())
+                print(lst)
+        else:
+            if lst[0][1:].lower() not in sets and "before" not in s:
+                sets.append(lst[0][1:].lower())
+
+    heats = [[ [0 for i in range(0,10)] for i in range(0,11) ]  for i in range(0, len(sets))]
+    
+    sets.sort()
+    mapping = 0
+    discard = 0
+    for s in range(0,len(sets)):
+        for k in data.keys():
+            if sets[s] in k.lower() and "before" not in k:
+                discard = int(k[0])
+                for ele in k.split("_"):
+                    if "after" in ele:
+                        ele = ele.replace(".txt",'').replace("after","")
+                        mapping = int(ele)
+                        check = True
+                        break
+                heats[s][mapping-2][discard] = passing_rates[k]
+
+    fig = plt.figure()
+
+    
+
+    grid = AxesGrid(fig, 111, nrows_ncols=(1, len(sets)), axes_pad=0.1, cbar_mode="single")
+
+
+    x_ticks = [1,3,5,7,9]
+    x_ticksl = ["3","5","7","9","11"]
+
+    i=0
+    for val, ax in zip(heats,grid):
+        im = ax.imshow(val, vmin=0, vmax=1)
+        proper_name = get_proper_name(sets[i])
+        ax.title.set_text(proper_name)
+        ax.set( aspect='equal')
+        ax.set_xticks(x_ticks)
+        ax.set_xticklabels(x_ticksl) 
+        ax.set_ylim([0,10])
+        i+=1
+    grid.cbar_axes[0].colorbar(im,ticks=[0,0.5,1])
+
+    
+    plt.xlabel("Bit Sequence Length")
+    plt.ylabel("Bits Discarded")
+    plt.ylim(0, 11)
+    plt.show()
+
+
+    
+            
+    print(sets)
+
+'''
+This method creates all of the comparison heatmaps for the data retention after applying moonshine.
+input:
+    data = ditctionary where the key is the filename and the value at the index is the pass rate of the file.
+'''
+def heatmap_data_ret(data):
+    font = {'family' : 'normal',
+            'size'   : 18}
+
+    plt.rc('font', **font)
+    plt.rc('text', usetex=True)
+
+    sets = []
+    sets2 = []
+    passing_rates = examine_data(data)
+    for s in data.keys():
+        lst = s.split("_")
+        if "10" in lst[0] or "11" in lst[0] or "12" in lst[0]:
+            if lst[0][2:].lower() not in sets and "before" not in s:
+                sets.append(lst[0][2:].lower())
+                print(lst)
+        else:
+            if lst[0][1:].lower() not in sets and "before" not in s:
+                sets.append(lst[0][1:].lower())
+
+    heats = [[ [0 for i in range(0,10)] for i in range(0,11) ]  for i in range(0, len(sets))]
+    sets.sort()
+    mapping = 0
+    discard = 0
+    for s in range(0,len(sets)):
+        for k in data.keys():
+            if sets[s] in k.lower() and "before" not in k:
+                print(get_data_retained(k,sets[s],sets,data))
+                discard = int(k[0])
+                for ele in k.split("_"):
+                    if "after" in ele:
+                        ele = ele.replace(".txt",'').replace("after","")
+                        mapping = int(ele)
+                        check = True
+                        break
+                heats[s][mapping-2][discard] = 1-get_data_retained(k,sets[s],sets,data)
+ 
+    fig = plt.figure()
+    grid = AxesGrid(fig, 111, nrows_ncols=(1, len(sets)), axes_pad=0.1, cbar_mode="single")
+
+
+
+    i = 0
+    x_ticks = [1,3,5,7,9]
+    x_ticksl = ["3","5","7","9","11"]
+    for val, ax in zip(heats,grid):
+        im = ax.imshow(val, vmin=0, vmax=0.5)
+        proper_name = get_proper_name(sets[i])
+        ax.title.set_text(proper_name)
+        ax.set( aspect='equal')
+        ax.set_xticks(x_ticks)
+        ax.set_xticklabels(x_ticksl) 
+        ax.set_ylim([0,10])
+        i+=1
+    grid.cbar_axes[0].colorbar(im,ticks=[0,0.5,1])
+
+
+    plt.ylim(0, 11)
+    plt.show()
+
+
+    
+            
+    print(sets)
+
+
+'''
+This method will return the proper label based on the data set's file name.
+input:
+    name = a string of a filename of which gets mapped to a label.
+'''
+
+def get_proper_name(name):
+    names = ['officeSH', 'audio', 'OfficeTR', 'AeroKey', 'raw', 'CarSH', 'MobileTR', 'MobileS']
+    if name == "officeSH".lower():
+        return "Office 1"
+    elif name == "audio".lower():
+        return "Audio"
+    elif name == "OfficeTR".lower():
+        return "Office 2"
+    elif name == "AeroKey".lower():
+        return "RF Frequencies"
+    elif name == "raw".lower():
+        return "Voltkey"
+    elif name == "CarSH".lower():
+        return "Car"
+    elif name == "MobileTR".lower():
+        return "Mobile 1"
+    elif name == "MobileS".lower():
+        return "Mobile 2"
+
+if __name__ == '__main__':
+    # Parses all files in the nist_test_results folder
+    data = parse_files()
+    # Generates heatmaps of nist test pass rates
+    heatmap_comp(data)
+    # Generates heatmaps of data retention after using Moonshine
+    heatmap_data_ret(data)

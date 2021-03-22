@@ -1,14 +1,11 @@
 #include "main.h"
 
-//#define DEBUG 
 
 
 
 int main(int argc, char *argv[]){
-    int j;
-    
+    //Parse command-line arguments
     cmd* vals = parse_commandline(argc, argv);
-
     int count = vals->bl;
     int bl = vals->bl;
     int sl = vals->sl;
@@ -16,19 +13,20 @@ int main(int argc, char *argv[]){
     int total_before_mapping = pow_jack(2,bl);
     int total_after_mapping = pow_jack(2,sl);
 
+    //Initalizing locals based on the command line arguments
+    int j;
     int* list_ints_before = malloc(sizeof(int) * total_before_mapping);
     int* list_ints_after = malloc(sizeof(int) * total_after_mapping);
     int* judges_list = malloc(sizeof(int) * total_before_mapping);
     int* ordering_list_before =malloc(sizeof(int) * total_before_mapping);
     int* ordering_list_after =malloc(sizeof(int) * total_after_mapping);
-
     char *path = vals->filepath;
     char *outfile = vals->outfile; 
-
+    //Locally caching the bit stream from a file
     char* bits = create_bits_arr(path);
     int total_bin_nums = strlen(bits);
 
-
+    //initalizing arrays
     for(j = 0; j < total_before_mapping; j++){
         list_ints_before[j] = 0;
     }
@@ -49,46 +47,30 @@ int main(int argc, char *argv[]){
         ordering_list_after[j] = 0;
     }
 
-    //Testing bin_to_int function
-    //printf("%d\n", bin_to_int("01110111"));
-
-    //Testing apply discard
+   // First thing we do is discard bits in the given stream
     apply_discard(bits, total_bin_nums, bl, discard);
     
-    //print_stream(bits, total_bin_nums);
-
+    // We then formulate the histogram of all the found values after we have discarded the bits
     form_histogram(bits, total_bin_nums, bl, list_ints_before, ordering_list_before, total_before_mapping);
 
-    //histogram test
-    // printf("TOTAL BEFORE MAPPING = %d\n", list_ints_before);
-    // for(int i =0; i < total_before_mapping; i++ ){
-    //     printf("%d\t", list_ints_before[i]);
-    // }
-    // printf("\n");
-    //ordering list check
-    // for(int i =0; i < total_before_mapping; i++ ){
-    //     printf("%d\t", ordering_list_before[i]);
-    // }
-
-    // printf("\n");
+    //We then drop the highest half of the bits
     drop_highest_half(list_ints_before, total_before_mapping, total_after_mapping);
     
-    // for(int i =0; i < total_before_mapping; i++ ){
-    //     printf("%d\t", list_ints_before[i]);
-    // }
-
-    // printf("\n");
+    // We formulate the new mappings based on the ording and remaing values
     new_mapping(list_ints_before, total_before_mapping, ordering_list_before, ordering_list_after, judges_list);
 
-
-    // for(int i =0; i < total_after_mapping; i++ ){
-    //     printf("%d\t", ordering_list_after[i]);
-    // }
-    // printf("\n");
-
+    // We then apply the new mappings we determined prior and generate a new output file. 
     translate_new_mappings(judges_list, total_after_mapping, sl, bits, total_bin_nums, outfile);
 }
 
+/*
+Self made power function to avoid importing math.h
+input:
+    a = the base number we want to raise to a power
+    b = The exponent of the number a
+output:
+    a^b as a integer
+*/
 long pow_jack(int a, int b){
     long tmp_num = 1;
     if (b == 0){
@@ -102,6 +84,15 @@ long pow_jack(int a, int b){
     return tmp_num;
 }
 
+/*
+Method to apply the discard from the command line
+input:
+    bits = the array of bits as a array of chars
+    len = the length of the bits array
+    bin_len = the amount of bits we want to use to define a number i.e. if bin_len = 8 then we convert 8 bits into a integer.
+    discard = The amount of bits we want to discard
+
+*/
 void apply_discard(char* bits, int len, int bin_len, int discard){
     int count = 0;
     if (discard == 0){
@@ -123,7 +114,9 @@ void apply_discard(char* bits, int len, int bin_len, int discard){
     }
 }
 
-
+/*
+Debugging function to print a bit stream bit for bit.
+*/
 void print_stream(char* bits, int len){
     for(int i =0; i < len; i++){
         printf("%c", bits[i]);
@@ -131,7 +124,16 @@ void print_stream(char* bits, int len){
     printf("\n");
 }
 
-
+/*
+This method will create a histogram of the occurances of bit sequences.
+input:
+    bits = given bit stream where each bit is a char
+    len = len of the bits array
+    bin_len = how many bits used to define a number
+    histo_before = This is the histogram of all of the numbers before applying moonshine
+    ordering_list = A list that remebers the order of the numbers when they first occur
+    histo_len = the length of the histogram list. 
+*/
 void form_histogram(char* bits, int len, int bin_len, int* histo_before, int* ordering_list, int histo_len){
     char* bin_num = malloc(bin_len+1);
     int count = 0;
@@ -164,6 +166,14 @@ void form_histogram(char* bits, int len, int bin_len, int* histo_before, int* or
     free(bin_num);
 }
 
+
+/*
+This method will drop the highest half of values from the histogram
+input:
+    histo_before = the hisgram of numbers before applying moonshine
+    len1 = length of the histo_before
+    len2 = How many sequences we want to drop.
+*/
 void drop_highest_half(int* histo_before, int len1, int len2){
     int max = 0;
     int index = 0;
@@ -181,6 +191,15 @@ void drop_highest_half(int* histo_before, int len1, int len2){
 
 }
 
+/*
+This method applies a new mapping using the old data.
+input:
+    histo_before = the hisgram of numbers before applying moonshine
+    len1 = lenght of histo_before
+    ordering_list_before = the order in which the binary sequence originally appeared relative to each number
+    ordering_list_after = The new ordering of the remaining half, in other words, the new mapping.
+    judges_list = a list containing the mapping locations
+*/
 void new_mapping(int* histo_before, int len1, int* ordering_list_before, int* ordering_list_after, int* judges_list){
     int index = 0;
     int location = 0;
@@ -197,6 +216,16 @@ void new_mapping(int* histo_before, int len1, int* ordering_list_before, int* or
 
 }
 
+/*
+This method will apply the mapping generated from the method above and write the results to a new file.
+input:
+    judges_list = a list containing the mapping locations
+    len = new length after the mapping
+    sl = the new binary power
+    bits = the orginal list of bits we started with
+    len2 = the total amount of bits
+    path = file path where the user wishes to save their results.
+*/
 void translate_new_mappings(int* judges_list, int len, int sl, char* bits, int len2, char* path){
     char* bin_num = malloc(sl+1);
     int count = 0;
@@ -233,6 +262,13 @@ void translate_new_mappings(int* judges_list, int len, int sl, char* bits, int l
 
 }
 
+/*
+This will translate a binary string to a integer.
+input:
+    bin = string of a binary number
+output:
+    integer representation of the binary string.
+*/
 
 long bin_to_int(char* bin){
     long ret = 0;
@@ -246,6 +282,14 @@ long bin_to_int(char* bin){
     return ret;
 }
 
+/*
+This will translate a integer to a binary string.
+input:
+    bin = number we want to translate to binary
+    size = the amount of bits we would like to use to represent the number
+output:
+    string representation in binary format of the given number.
+*/
 char* int_to_bin(int bin, int size){
     char* ret = malloc(size+1);
 
@@ -264,7 +308,13 @@ char* int_to_bin(int bin, int size){
     return ret;
 
 }
-
+/*
+This method will take a string argument where the number is base 10 and convert the string to a integer.
+input:
+    number = string number in base 10
+output:
+    integer representation of the given string number
+*/
 int str_to_int(char* number){
     int count = 0;
     int ret = 0;
@@ -292,6 +342,14 @@ int str_to_int(char* number){
 
 }
 
+/*
+This method will parse command-line arguments
+input:
+    argc = the total amount of command line arguments 
+    argv = The actual command-line values
+output:
+    A arguments structure with the parsed data
+*/
 
 cmd* parse_commandline(int argc, char** argv){
 
@@ -328,7 +386,13 @@ cmd* parse_commandline(int argc, char** argv){
     return ret;
 
 }
-
+/*
+This method will take a ascii binary file and create a list of bits out of that file
+input:
+    filepath = path of the file given
+output:
+    an array of bits gathered from that file
+*/
 char* create_bits_arr(char* filepath){
     FILE* fpw = fopen(filepath, "r");
     char* bits = malloc(256);
@@ -350,7 +414,12 @@ char* create_bits_arr(char* filepath){
     return bits;
 
 }
-
+/*
+Write a character string to a file
+input:
+    bin = binary number as a char array
+    path = filepath of the file we would like to write to.
+*/
 void write_to_file(char* bin, char* path){
 
     FILE* fp = fopen(path, "a");
