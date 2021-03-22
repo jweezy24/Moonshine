@@ -79,7 +79,6 @@ long pow_jack(int a, int b){
     for(int i = 0; i < b; i++){
         
         tmp_num = tmp_num*a;
-        //printf("tmp_num = %d\n", tmp_num);
     }
     return tmp_num;
 }
