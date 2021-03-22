@@ -37,3 +37,6 @@ clean:
 
 clean_all:
 	rm -rf Moonshine bin/*
+
+experiments:
+	python3 scripts/prepare_python_experiments.py --data-path './data' --NIST-path './sts-2.1.2' --Moonshine-path './'
