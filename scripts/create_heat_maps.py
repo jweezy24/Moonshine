@@ -153,11 +153,11 @@ def heatmap_data_ret(data):
     # Font removed to have less dependencies
     # To readd this code, you must install latex and then uncomment the lines below
     
-    font = {'family' : 'normal',
-            'size'   : 18}
+    # font = {'family' : 'normal',
+    #         'size'   : 18}
 
-    plt.rc('font', **font)
-    plt.rc('text', usetex=True)
+    # plt.rc('font', **font)
+    # plt.rc('text', usetex=True)
 
     sets = []
     sets2 = []
@@ -173,8 +173,7 @@ def heatmap_data_ret(data):
                 sets.append(lst[0][1:].lower())
 
     heats = [[ [0 for i in range(0,10)] for i in range(0,11) ]  for i in range(0, len(sets))]
-    sets = ["rf", "audio", "car1", "mobile2", "mobile1", "office1", "office2", "voltkey"]
-    #sets.sort()
+    sets.sort()
     mapping = 0
     discard = 0
     for s in range(0,len(sets)):
@@ -209,12 +208,10 @@ def heatmap_data_ret(data):
         i+=1
     grid.cbar_axes[0].colorbar(im,ticks=[0,0.5,1])
 
-    print(heats)
 
     plt.ylim(0, 11)
     if not os.path.isdir("./figures"):
         os.system("mkdir ./figures")
-    plt.show()    
     plt.savefig("./figures/data_retention.pdf")
 
 
