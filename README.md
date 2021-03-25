@@ -51,6 +51,12 @@ By default, our experiments script will setup directories in the Moonshine git r
 You can change paths by editing the make file and changing the arguments, `--data_path '' --NIST_path '' --Moonshine_path ''` to `--data_path '<path>' --NIST_path '<path>' --Moonshine_path '<path>'`.
 
 
+### Disclaimer
+
+THIS PROCESS WILL TAKE A VERY LONG TIME TO COMPLETE.
+IF YOU ARE USING VISUAL STUDIO YOU MAY EXPERIENCE SOME RAM ISSUES IF YOU HAVE VSCODE OPEN WHILE RUNNING THE EXPERIMENTS.
+
+
 ### Author 
 
 [Jack West](jacksonwaynewest.com) - [Github](https://github.com/jweezy24) - [jwest1@luc.edu](jwest1@luc.edu)
