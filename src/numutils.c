@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "numutils.h"
 
 long pow2(int n) {
     if (n < 0) return 0;
@@ -36,43 +36,16 @@ long  any_string_to_long(char* any_string, int base, int *status) {
     }
 
     for (p=any_string; *p; p++) {
-        int digit_value;
+        int digit_value = -1;
         if (*p >= '0' && *p <= '9')
             digit_value = *p - '0';
         else if (*p >= 'A' && *p <= 'Z')
             digit_value = *p - 'A' + 10;
-        if (digit_value >= base) {
+        if (digit_value < 0 || digit_value >= base) {
             *status = -1;
             return 0;
         }
         result = (result * base) + digit_value;
     }
     return result;
-}
-
-int main(int argc, char* argv[]) {
-    for (int i=0; i < 16; i++)
-        printf("i=%d, 2^i=%ld\n", i, pow2(i));
-
-    char* data[] = { "1", "10", "11", "100", "101", "110", "111", "000000", "11111", "1111111", "00000000", "20002" };
-
-    char *hex_data[] = { "0", "10", "100", "101", "1000", "F", "FF", "A", "AA" };
-
-    for (int i=0; i < sizeof(data) / sizeof(char*); i++) {
-        int status;
-        long value = binary_string_to_long(data[i], &status);
-        if (status < 0)
-            printf("Cannot convert %s\n", data[i]);
-        else
-            printf("%s = %ld\n", data[i], value);
-    }
-
-    for (int i=0; i < sizeof(hex_data) / sizeof(char*); i++) {
-        int status;
-        long value = any_string_to_long(hex_data[i], 16, &status);
-        if (status < 0)
-            printf("Cannot convert %s to base 16\n", hex_data[i]);
-        else
-            printf("%s = %ld\n", hex_data[i], value);
-    }
 }
