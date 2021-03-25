@@ -29,21 +29,12 @@ int main(int argc, char *argv[]){
     //initalizing arrays
     for(j = 0; j < total_before_mapping; j++){
         list_ints_before[j] = 0;
-    }
-
-    for(j = 0; j < total_after_mapping; j++){
-        list_ints_after[j] = 0;
-    }
-
-    for(j = 0; j < total_before_mapping; j++){
         judges_list[j] = -1;
-    }
-
-    for(j = 0; j < total_before_mapping; j++){
         ordering_list_before[j] = -2;
     }
 
     for(j = 0; j < total_after_mapping; j++){
+        list_ints_after[j] = 0;
         ordering_list_after[j] = 0;
     }
 
