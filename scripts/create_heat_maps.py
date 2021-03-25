@@ -1,4 +1,5 @@
-import os,sys
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -14,6 +15,7 @@ Parses the NIST output files
 output:
     a dictionary that will be the filename is the key and the value at the index is the pass rate.
 '''
+
 
 def parse_files():
     data_to_file = {}
@@ -34,6 +36,7 @@ def parse_files():
 
     return data_to_file
 
+
 '''
 Calculates difference in bits in in the file before and after applying Moonshine
 input:
@@ -44,6 +47,7 @@ output:
     percentage of data remaining of the given file as a float
 '''
 
+
 def get_data_retained(k, s, data):
     total_before = 0
     for j in data.keys():
@@ -53,12 +57,12 @@ def get_data_retained(k, s, data):
                 with open(f"{data_path}/{j}", 'r') as f:
                     for line in f:
                         for char in line:
-                            total_before+=1
+                            total_before += 1
 
             with open(f"{data_path}/{k}", 'r') as f:
                 for line in f:
                     for char in line:
-                        total_after+=1
+                        total_after += 1
 
             percent = (total_before-total_after)/total_before
             return percent
@@ -69,6 +73,7 @@ This method creates all of the comparison heatmaps for the NIST test pass rates.
 input:
     data = ditctionary where the key is the filename and the value at the index is the pass rate of the file.
 '''
+
 
 def heatmap_passrate(data):
     # Font removed to have less dependencies
@@ -92,18 +97,19 @@ def heatmap_passrate(data):
             if lst[0][1:].lower() not in sets and "before" not in s:
                 sets.append(lst[0][1:].lower())
 
-    heats = [[ [0 for i in range(0,10)] for i in range(0,11) ]  for i in range(0, len(sets))]
-    
+    heats = [[[0 for i in range(0, 10)] for i in range(0, 11)]
+             for i in range(0, len(sets))]
+
     sets.sort()
     mapping = 0
     discard = 0
-    for s in range(0,len(sets)):
+    for s in range(0, len(sets)):
         for k in data.keys():
             if sets[s] in k.lower() and "before" not in k:
                 discard = int(k[0])
                 for ele in k.split("_"):
                     if "after" in ele:
-                        ele = ele.replace(".txt",'').replace("after","")
+                        ele = ele.replace(".txt", '').replace("after", "")
                         mapping = int(ele)
                         check = True
                         break
@@ -111,48 +117,45 @@ def heatmap_passrate(data):
 
     fig = plt.figure()
 
-    
+    grid = AxesGrid(fig, 111, nrows_ncols=(1, len(sets)),
+                    axes_pad=0.1, cbar_mode="single")
 
-    grid = AxesGrid(fig, 111, nrows_ncols=(1, len(sets)), axes_pad=0.1, cbar_mode="single")
+    x_ticks = [1, 3, 5, 7, 9]
+    x_ticksl = ["3", "5", "7", "9", "11"]
 
-
-    x_ticks = [1,3,5,7,9]
-    x_ticksl = ["3","5","7","9","11"]
-
-    i=0
-    for val, ax in zip(heats,grid):
+    i = 0
+    for val, ax in zip(heats, grid):
         im = ax.imshow(val, vmin=0, vmax=1)
         proper_name = get_proper_name(sets[i])
         ax.title.set_text(proper_name)
-        ax.set( aspect='equal')
+        ax.set(aspect='equal')
         ax.set_xticks(x_ticks)
-        ax.set_xticklabels(x_ticksl) 
-        ax.set_ylim([0,10])
-        i+=1
-    grid.cbar_axes[0].colorbar(im,ticks=[0,0.5,1])
+        ax.set_xticklabels(x_ticksl)
+        ax.set_ylim([0, 10])
+        i += 1
+    grid.cbar_axes[0].colorbar(im, ticks=[0, 0.5, 1])
 
-    
     plt.xlabel("Bit Sequence Length")
     plt.ylabel("Bits Discarded")
     plt.ylim(0, 11)
     if not os.path.isdir("./figures"):
-        os.system("mkdir ./figures")    
+        os.system("mkdir ./figures")
     plt.savefig("./figures/passrate.pdf")
 
-
-    
-            
     print(sets)
+
 
 '''
 This method creates all of the comparison heatmaps for the data retention after applying moonshine.
 input:
     data = ditctionary where the key is the filename and the value at the index is the pass rate of the file.
 '''
+
+
 def heatmap_data_ret(data):
     # Font removed to have less dependencies
     # To readd this code, you must install latex and then uncomment the lines below
-    
+
     # font = {'family' : 'normal',
     #         'size'   : 18}
 
@@ -172,48 +175,47 @@ def heatmap_data_ret(data):
             if lst[0][1:].lower() not in sets and "before" not in s:
                 sets.append(lst[0][1:].lower())
 
-    heats = [[ [0 for i in range(0,10)] for i in range(0,11) ]  for i in range(0, len(sets))]
+    heats = [[[0 for i in range(0, 10)] for i in range(0, 11)]
+             for i in range(0, len(sets))]
     sets.sort()
     mapping = 0
     discard = 0
-    for s in range(0,len(sets)):
+    for s in range(0, len(sets)):
         for k in data.keys():
             if sets[s] in k.lower() and "before" not in k:
-                print(get_data_retained(k,sets[s],data))
+                print(get_data_retained(k, sets[s], data))
                 discard = int(k[0])
                 for ele in k.split("_"):
                     if "after" in ele:
-                        ele = ele.replace(".txt",'').replace("after","")
+                        ele = ele.replace(".txt", '').replace("after", "")
                         mapping = int(ele)
                         check = True
                         break
-                heats[s][mapping-2][discard] = 1-get_data_retained(k,sets[s],data)
- 
+                heats[s][mapping-2][discard] = 1 - \
+                    get_data_retained(k, sets[s], data)
+
     fig = plt.figure()
-    grid = AxesGrid(fig, 111, nrows_ncols=(1, len(sets)), axes_pad=0.1, cbar_mode="single")
-
-
+    grid = AxesGrid(fig, 111, nrows_ncols=(1, len(sets)),
+                    axes_pad=0.1, cbar_mode="single")
 
     i = 0
-    x_ticks = [1,3,5,7,9]
-    x_ticksl = ["3","5","7","9","11"]
-    for val, ax in zip(heats,grid):
+    x_ticks = [1, 3, 5, 7, 9]
+    x_ticksl = ["3", "5", "7", "9", "11"]
+    for val, ax in zip(heats, grid):
         im = ax.imshow(val, vmin=0, vmax=0.5)
         proper_name = get_proper_name(sets[i])
         ax.title.set_text(proper_name)
-        ax.set( aspect='equal')
+        ax.set(aspect='equal')
         ax.set_xticks(x_ticks)
-        ax.set_xticklabels(x_ticksl) 
-        ax.set_ylim([0,10])
-        i+=1
-    grid.cbar_axes[0].colorbar(im,ticks=[0,0.5,1])
-
+        ax.set_xticklabels(x_ticksl)
+        ax.set_ylim([0, 10])
+        i += 1
+    grid.cbar_axes[0].colorbar(im, ticks=[0, 0.5, 1])
 
     plt.ylim(0, 11)
     if not os.path.isdir("./figures"):
         os.system("mkdir ./figures")
     plt.savefig("./figures/data_retention.pdf")
-
 
 
 '''
@@ -222,8 +224,10 @@ input:
     name = a string of a filename of which gets mapped to a label.
 '''
 
+
 def get_proper_name(name):
-    names = ['officeSH', 'audio', 'OfficeTR', 'AeroKey', 'raw', 'CarSH', 'MobileTR', 'MobileS']
+    names = ['officeSH', 'audio', 'OfficeTR', 'AeroKey',
+             'raw', 'CarSH', 'MobileTR', 'MobileS']
     if name == "office1".lower():
         return "Office 1"
     elif name == "audio".lower():
@@ -248,27 +252,26 @@ def examine_data(data):
         passes = 0
         fails = 0
         nonoverlapping = 126
-        nonoverlapping_fails = 0    
+        nonoverlapping_fails = 0
         for ele in data.get(key):
             stars = [i for i, e in enumerate(ele) if '*' in e]
             if (11 in stars and 13 in stars) and 'NonOverlappingTemplate\n' not in ele[-1] and "RandomExcursionsVariant" not in ele[-1]:
-                fails +=1
-            elif 'NonOverlappingTemplate\n' in ele[-1] and ( 11 in stars and 13 in stars):
+                fails += 1
+            elif 'NonOverlappingTemplate\n' in ele[-1] and (11 in stars and 13 in stars):
                 nonoverlapping_fails += 1
-            elif 'NonOverlappingTemplate\n' in ele[-1] or "RandomExcursionsVariant" in ele[-1] :
+            elif 'NonOverlappingTemplate\n' in ele[-1] or "RandomExcursionsVariant" in ele[-1]:
                 continue
             else:
                 passes += 1
-        
+
         if nonoverlapping_fails/nonoverlapping >= .5:
             fails += 1
         else:
             passes += 1
 
-        try:        
+        try:
             failure_rate[key] = (passes/(passes+fails))
         except:
             failure_rate[key] = "NA"
-    
-    return failure_rate
 
+    return failure_rate
