@@ -8,9 +8,9 @@ NIST_url = "https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/docu
 moonshine_data_url = "https://zenodo.org/record/4579975/files/moonshine.zip"
 
 parser = argparse.ArgumentParser(description='Moonshine experiment customization.')
-parser.add_argument('--data_path', type=str, help='The path the user would like to store their data')
-parser.add_argument('--NIST_path', type=str, help="The path the user's NIST test suite lives.")
-parser.add_argument('--Moonshine_path', type=str, help="The path the user's Moonshine root directory is located.")
+parser.add_argument('--data_path', default='', type=str, help='The path the user would like to store their data')
+parser.add_argument('--NIST_path', default='', type=str, help="The path the user's NIST test suite lives.")
+parser.add_argument('--Moonshine_path', default='', type=str, help="The path the user's Moonshine root directory is located.")
 
 args = parser.parse_args()
 

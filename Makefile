@@ -28,4 +28,4 @@ clean:
 	rm  Moonshine.o
 
 experiments:
-	$(PYTHON) scripts/prepare_python_experiments.py --data_path '' --NIST_path '' --Moonshine_path ''
+	$(PYTHON) scripts/prepare_python_experiments.py
