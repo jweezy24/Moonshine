@@ -318,8 +318,6 @@ int str_to_int(char* number){
     int count = 0;
     int ret = 0;
 
-    printf("NUMBER = %s\n", number);
-
     while(number[count] != 0){
         count+=1;    
     }

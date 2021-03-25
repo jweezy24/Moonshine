@@ -2,7 +2,7 @@
 
 Moonshine is a randomness distiller. 
 The purpose of Moonshine is to be applied to a dataset after bit extraction to increase the randomness of a bit stream.
-Ideally, Moonshine would be attached dynamically after determining which parameters create the most randomness for your input stream.
+Ideally, Moonshine would be run in real-time and create a mapping after a "warmup" period has passed which allowed for 
 
 ## Dependencies
 
@@ -26,13 +26,11 @@ If you would like to generate your own graphs you will need the NIST test suite 
 You also need to set up three enviromental variables.
 
 
-### Build Moonshine
+### Build Moonshine and Run Moonshine
 
 Moonshine does not have any inherient requirements.
 On any system that has GCC, the user needs to just compile the code using this command, `make`.
-That will create an output file called `Moonshine.o`, we will explain how to use Moonshine on it's own further down in this readme.
-
-### Running Moonshine By Itself
+That will create an output file called `Moonshine.o`.
 
 This version of Moonshine takes 5 arguments,
 
@@ -43,5 +41,19 @@ Moonshine could also be run dynamically in the background of a data gathering pr
 If you want to use moonshine in real time, I would suggest extracting the algorithm code and writing code that will utilize it in realtime.
 We present a very straight forward implementation that is designed to be reimplemented in other systems.
 
+### Running all experiments
+
+To run experiments, you can enter the command `make experiments`.
+This command will pull and install the NIST test suite and it will pull the datasets we used in the Moonshine work.
+It will also generate the graphs we used in the work as well.
+If you had not compiled Moonshine, the script will aslo do that as well.
+
+By default, our experiments script will setup directories in the Moonshine git repository directory.
+You can change paths by editing the make file and changing the arguments, `--data_path '' --NIST_path '' --Moonshine_path ''` to `--data_path '<path>' --NIST_path '<path>' --Moonshine_path '<path>'`.
+
+
+### Author 
+
+[Jack West](jacksonwaynewest.com) - [Github](https://github.com/jweezy24) - [jwest1@luc.edu](jwest1@luc.edu)
 
     

@@ -1,6 +1,6 @@
 matplotlib
 scipy
 numpy
-mpl_toolkits
 pandas
 argparse
+wget

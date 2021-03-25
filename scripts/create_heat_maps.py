@@ -8,6 +8,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1 import AxesGrid
 import argparse
 
+data_path = os.environ['DATAPATH']
 '''
 Parses the NIST output files
 output:
@@ -44,15 +45,17 @@ output:
 '''
 
 def get_data_retained(k, s, data):
+    total_before = 0
     for j in data.keys():
         if s in j.lower() and "before" in j:
-            total_before = 0
             total_after = 0
-            with open(f"{path_to_files}/{j}", 'r') as f:
-                for line in f:
-                    for char in line:
-                        total_before+=1
-            with open(f"{path_to_files}/{k}", 'r') as f:
+            if total_before == 0:
+                with open(f"{data_path}/{j}", 'r') as f:
+                    for line in f:
+                        for char in line:
+                            total_before+=1
+
+            with open(f"{data_path}/{k}", 'r') as f:
                 for line in f:
                     for char in line:
                         total_after+=1
@@ -68,12 +71,14 @@ input:
 '''
 
 def heatmap_passrate(data):
+    # Font removed to have less dependencies
+    # To readd this code, you must install latex and then uncomment the lines below
 
-    font = {'family' : 'normal',
-            'size'   : 18}
+    # font = {'family' : 'normal',
+    #         'size'   : 18}
 
-    plt.rc('font', **font)
-    plt.rc('text', usetex=True)
+    # plt.rc('font', **font)
+    # plt.rc('text', usetex=True)
 
     sets = []
     passing_rates = examine_data(data)
@@ -130,7 +135,9 @@ def heatmap_passrate(data):
     plt.xlabel("Bit Sequence Length")
     plt.ylabel("Bits Discarded")
     plt.ylim(0, 11)
-    plt.show()
+    if not os.path.isdir("./figures"):
+        os.system("mkdir ./figures")    
+    plt.savefig("./figures/passrate.pdf")
 
 
     
@@ -143,6 +150,9 @@ input:
     data = ditctionary where the key is the filename and the value at the index is the pass rate of the file.
 '''
 def heatmap_data_ret(data):
+    # Font removed to have less dependencies
+    # To readd this code, you must install latex and then uncomment the lines below
+    
     font = {'family' : 'normal',
             'size'   : 18}
 
@@ -163,13 +173,14 @@ def heatmap_data_ret(data):
                 sets.append(lst[0][1:].lower())
 
     heats = [[ [0 for i in range(0,10)] for i in range(0,11) ]  for i in range(0, len(sets))]
-    sets.sort()
+    sets = ["rf", "audio", "car1", "mobile2", "mobile1", "office1", "office2", "voltkey"]
+    #sets.sort()
     mapping = 0
     discard = 0
     for s in range(0,len(sets)):
         for k in data.keys():
             if sets[s] in k.lower() and "before" not in k:
-                print(get_data_retained(k,sets[s],sets,data))
+                print(get_data_retained(k,sets[s],data))
                 discard = int(k[0])
                 for ele in k.split("_"):
                     if "after" in ele:
@@ -177,7 +188,7 @@ def heatmap_data_ret(data):
                         mapping = int(ele)
                         check = True
                         break
-                heats[s][mapping-2][discard] = 1-get_data_retained(k,sets[s],sets,data)
+                heats[s][mapping-2][discard] = 1-get_data_retained(k,sets[s],data)
  
     fig = plt.figure()
     grid = AxesGrid(fig, 111, nrows_ncols=(1, len(sets)), axes_pad=0.1, cbar_mode="single")
@@ -198,14 +209,14 @@ def heatmap_data_ret(data):
         i+=1
     grid.cbar_axes[0].colorbar(im,ticks=[0,0.5,1])
 
+    print(heats)
 
     plt.ylim(0, 11)
-    plt.show()
+    if not os.path.isdir("./figures"):
+        os.system("mkdir ./figures")
+    plt.show()    
+    plt.savefig("./figures/data_retention.pdf")
 
-
-    
-            
-    print(sets)
 
 
 '''
@@ -216,27 +227,51 @@ input:
 
 def get_proper_name(name):
     names = ['officeSH', 'audio', 'OfficeTR', 'AeroKey', 'raw', 'CarSH', 'MobileTR', 'MobileS']
-    if name == "officeSH".lower():
+    if name == "office1".lower():
         return "Office 1"
     elif name == "audio".lower():
         return "Audio"
-    elif name == "OfficeTR".lower():
+    elif name == "Office2".lower():
         return "Office 2"
-    elif name == "AeroKey".lower():
+    elif name == "rf".lower():
         return "RF Frequencies"
-    elif name == "raw".lower():
+    elif name == "voltkey".lower():
         return "Voltkey"
-    elif name == "CarSH".lower():
+    elif "car".lower() in name:
         return "Car"
-    elif name == "MobileTR".lower():
+    elif name == "Mobile1".lower():
         return "Mobile 1"
-    elif name == "MobileS".lower():
+    elif name == "Mobile2".lower():
         return "Mobile 2"
 
-if __name__ == '__main__':
-    # Parses all files in the nist_test_results folder
-    data = parse_files()
-    # Generates heatmaps of nist test pass rates
-    heatmap_comp(data)
-    # Generates heatmaps of data retention after using Moonshine
-    heatmap_data_ret(data)
+
+def examine_data(data):
+    failure_rate = {}
+    for key in data:
+        passes = 0
+        fails = 0
+        nonoverlapping = 126
+        nonoverlapping_fails = 0    
+        for ele in data.get(key):
+            stars = [i for i, e in enumerate(ele) if '*' in e]
+            if (11 in stars and 13 in stars) and 'NonOverlappingTemplate\n' not in ele[-1] and "RandomExcursionsVariant" not in ele[-1]:
+                fails +=1
+            elif 'NonOverlappingTemplate\n' in ele[-1] and ( 11 in stars and 13 in stars):
+                nonoverlapping_fails += 1
+            elif 'NonOverlappingTemplate\n' in ele[-1] or "RandomExcursionsVariant" in ele[-1] :
+                continue
+            else:
+                passes += 1
+        
+        if nonoverlapping_fails/nonoverlapping >= .5:
+            fails += 1
+        else:
+            passes += 1
+
+        try:        
+            failure_rate[key] = (passes/(passes+fails))
+        except:
+            failure_rate[key] = "NA"
+    
+    return failure_rate
+

@@ -53,3 +53,7 @@ dkms.conf
 
 data/
 sts-2.1.2/
+scripts/__pycache__/
+__pycache__/
+nist_test_results/*
+figures/

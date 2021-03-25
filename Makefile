@@ -1,8 +1,6 @@
 RM := rm -rf
 
 
-#OPENOCDDIR := /opt/openocd/
-#OCDCONFIG=microchip_same54_xplained_pro.cfg
 ODIR= bin
 SDIR= src
 CFLAGS= -I src/headers 
@@ -39,4 +37,4 @@ clean_all:
 	rm -rf Moonshine bin/*
 
 experiments:
-	python3 scripts/prepare_python_experiments.py --data-path './data' --NIST-path './sts-2.1.2' --Moonshine-path './'
+	python3 scripts/prepare_python_experiments.py --data_path '' --NIST_path '' --Moonshine_path ''
