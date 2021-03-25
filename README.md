@@ -10,14 +10,13 @@ There are two components to this repository.
 This repository contains the C code for Moonshine's algorithm and python scripts to run experiments on ascii bit streams.
 Tools needed to run the code:
 
-    - `GCC`
-    - `Python3`
-    - `make`
+    - GCC
+    - Python3
+    - make
 
-To properly generate the graphs for the NIST tests you must download the NIST test suite for randomness from [here](https://csrc.nist.gov/projects/random-bit-generation/documentation-and-software).
-
-
-### Experiments' Dependencies
+The version of the graphs in the paper are ordered differently and have a different font.
+To change the font, you must install `texlive`.
+You can still compile and run everything without texlive.
 
 The python experiments do have a few dependencies due to the analysis we preform after running the experiments.
 Therefore to install the dependencies run, `pip install -r ./requirements.txt`.
