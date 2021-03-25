@@ -5,7 +5,7 @@ long pow2(int n) {
     return 1 << n;
 }
 
-long  binary_stringto_long(char* bstring, int *status) {
+long  binary_string_to_long(char* bstring, int *status) {
     char* p;
     long result = 0;
     *status = 0; /* success assumed until proven otherwise */
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 
     for (int i=0; i < sizeof(data) / sizeof(char*); i++) {
         int status;
-        long value = binary_stringto_long(data[i], &status);
+        long value = binary_string_to_long(data[i], &status);
         if (status < 0)
             printf("Cannot convert %s\n", data[i]);
         else
