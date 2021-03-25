@@ -6,7 +6,6 @@
 int main(int argc, char *argv[]){
     //Parse command-line arguments
     cmd* vals = parse_commandline(argc, argv);
-    int count = vals->bl;
     int bl = vals->bl;
     int sl = vals->sl;
     int discard = vals->discard;
@@ -84,7 +83,6 @@ input:
 
 */
 void apply_discard(char* bits, int len, int bin_len, int discard){
-    int count = 0;
     if (discard == 0){
         return;
     }
