@@ -12,7 +12,7 @@ Tools needed to run the code:
 
     - GCC
     - Python3
-    - make
+    - make 
 
 The version of the graphs in the paper are ordered differently and have a different font.
 To change the font, you must install `texlive`.
@@ -28,8 +28,9 @@ You also need to set up three enviromental variables.
 ### Build Moonshine and Run Moonshine
 
 Moonshine does not have any inherient requirements.
-On any system that has GCC, the user needs to just compile the code using this command, `make`.
+On any system that has GCC, the user needs to just compile the code using this command, `make -C src`.
 That will create an output file called `Moonshine.o`.
+To make it available in the 'bin' folder, type `make -C src install`.
 
 This version of Moonshine takes 5 arguments,
 
