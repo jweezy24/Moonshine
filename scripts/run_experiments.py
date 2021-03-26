@@ -1,11 +1,28 @@
 import os
+import wget
+import zipfile
+import argparse
 from subprocess import Popen, PIPE
-from create_heat_maps import *
+
+nist_url = "https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip"
+moonshine_data_url = "https://zenodo.org/record/4579975/files/moonshine.zip"
+
+parser = argparse.ArgumentParser(
+    description='Moonshine experiment customization.')
+parser.add_argument('--data_path', default='', type=str,
+                    help='The path the user would like to store their data')
+parser.add_argument('--nist_path', default='', type=str,
+                    help="The path the user's NIST test suite lives.")
+parser.add_argument('--Moonshine_path', default='', type=str,
+                    help="The path the user's Moonshine root directory is located.")
 
 
-NIST_test_path = os.environ['NISTPATH']
-data_path = os.environ['DATAPATH']
-moonshine_path = os.environ["MOONSHINE"]
+args = parser.parse_args()
+
+
+nist_test_path = ''
+data_path = ''
+moonshine_path = ''
 
 '''
 Runs Moonshine on all available text files in the user's data_path
@@ -44,12 +61,12 @@ def part2():
             print(f"{file_}:\t{output}")
 
             p1 = Popen(["echo", f"0\n{data_path}/{file_}\n1\n0\n{bits}\n0\n"],
-                       stdout=PIPE, cwd=f"{NIST_test_path}")
+                       stdout=PIPE, cwd=f"{nist_test_path}")
             p2 = Popen(["./assess", f"{bit_stream_len}"],
-                       stdin=p1.stdout, stdout=PIPE, cwd=f"{NIST_test_path}")
+                       stdin=p1.stdout, stdout=PIPE, cwd=f"{nist_test_path}")
             output = p2.communicate()[0]
             os.system(
-                f"cp {NIST_test_path}/experiments/AlgorithmTesting/finalAnalysisReport.txt nist_test_results/{file_}")
+                f"cp {nist_test_path}/experiments/AlgorithmTesting/finalAnalysisReport.txt nist_test_results/{file_}")
 
 
 def clear_out_old_tests():
@@ -60,11 +77,11 @@ def clear_out_old_tests():
                 print(f"rm nist_test_results/{file_}")
                 os.system(f"rm nist_test_results/{file_}")
 
-    for (dirpath, dirnames, filenames) in os.walk(f"{NIST_test_path}/data"):
+    for (dirpath, dirnames, filenames) in os.walk(f"{nist_test_path}/data"):
         for file_ in filenames:
             if "after" in file_ and "before" not in file_:
-                print(f"rm {NIST_test_path}/data/{file_}")
-                os.system(f"rm {NIST_test_path}/data/{file_}")
+                print(f"rm {nist_test_path}/data/{file_}")
+                os.system(f"rm {nist_test_path}/data/{file_}")
 
     for (dirpath, dirnames, filenames) in os.walk(f"{data_path}"):
         for file_ in filenames:
@@ -103,3 +120,72 @@ def execute_experiments():
     heatmap_passrate(data)
     # Generates heatmaps of data retention after using Moonshine
     heatmap_data_ret(data)
+
+
+def install(data_path, nist_path, moonshine_path):
+
+    if not os.path.exists("./nist_test_results"):
+        os.system("mkdir ./nist_test_results")
+
+    # wgetting NIST test suite from website
+    if nist_path != "":
+        if os.path.isdir(nist_path):
+            wget.download(nist_url, out=nist_path)
+            nist_path += "/sts-2_1_2.zip"
+        else:
+            raise Exception("Given path is not a directory.")
+    else:
+        wget.download(nist_url, out="./")
+        nist_path = os.path.abspath("./sts-2_1_2.zip")
+
+    # Extract files within the zip
+    with zipfile.ZipFile(nist_path, 'r') as zip_ref:
+        zip_ref.extractall("./")
+
+    os.remove(nist_path)
+    nist_path = os.path.abspath("./sts-2.1.2/sts-2.1.2")
+
+    print(f"\n{nist_path}\n")
+    print(f"cd {nist_path} & make")
+
+    # install the NIST suite
+    os.system(f"cd {nist_path} && make")
+
+    if data_path != "":
+        if os.path.isdir(data_path):
+            wget.download(moonshine_data_url, out=data_path)
+            data_zip = os.path.abspath(f"{data_path}/moonshine.zip")
+        else:
+            raise Exception("Given path is not a directory.")
+    else:
+        if not os.path.exists("./data"):
+            os.system("mkdir ./data")
+
+        wget.download(moonshine_data_url, out="./data")
+        data_zip = os.path.abspath("./data/moonshine.zip")
+        data_path = os.path.abspath("./data/")
+
+    with zipfile.ZipFile(data_zip, 'r') as zip_ref:
+        zip_ref.extractall(f"{data_path}")
+
+    os.remove(f"{data_zip}")
+
+    if moonshine_path != "":
+        if not os.path.isdir(moonshine_path):
+            raise Exception("Given path is not a directory.")
+    else:
+        moonshine_path = os.path.abspath("./")
+        os.system("make")
+
+    os.environ["NISTPATH"] = nist_path
+    os.environ["DATAPATH"] = data_path
+    os.environ["MOONSHINE"] = moonshine_path
+
+
+if __name__ == "__main__":
+    install(args.data_path, args.nist_path, args.Moonshine_path)
+    nist_test_path = os.environ['NISTPATH']
+    data_path = os.environ['DATAPATH']
+    moonshine_path = os.environ["MOONSHINE"]
+    from create_heat_maps import *
+    execute_experiments()

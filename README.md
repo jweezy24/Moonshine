@@ -2,9 +2,12 @@
 
 Moonshine is a randomness distiller. 
 The purpose of Moonshine is to be applied to a dataset after bit extraction to increase the randomness of a bit stream.
-Ideally, Moonshine would be run in real-time and create a mapping after a "warmup" period has passed which allowed for 
+Ideally, Moonshine would be run in real-time and create a mapping after a "warmup" period has passed which allowed for
 
-## Dependencies
+This repositiory currently supports linux and MacOS.
+Windows support could be apart of future releases if there is requested support.
+
+### Dependencies
 
 There are two components to this repository.
 This repository contains the C code for Moonshine's algorithm and python scripts to run experiments on ascii bit streams.
@@ -17,6 +20,7 @@ Tools needed to run the code:
 The version of the graphs in the paper are ordered differently and have a different font.
 To change the font, you must install `texlive`.
 You can still compile and run everything without texlive.
+There is commented code in the create_heat_maps.py file which, if uncommented, will apply a Latex font to the graphs.
 
 The python experiments do have a few dependencies due to the analysis we preform after running the experiments.
 Therefore to install the dependencies run, `pip install -r ./requirements.txt`.
@@ -43,13 +47,14 @@ We present a very straight forward implementation that is designed to be reimple
 
 ### Running all experiments
 
-To run experiments, you can enter the command `make experiments`.
-This command will pull and install the NIST test suite and it will pull the datasets we used in the Moonshine work.
-It will also generate the graphs we used in the work as well.
-If you had not compiled Moonshine, the script will aslo do that as well.
+To run experiments, you can enter the command `python3 scripts/run_experiments.py`.
+The script will pull and install the NIST test suite and it will pull the datasets we used to evaluate Moonshine.
+The script will also compile Moonshine.
+The finaly thing the script will do is generate the graphs used in our work.
+The Graphs generated will be sized differently than the ones in the paper, to size them to your comfort or to take a closer look, use the plt.show() above the plt.savefig() command in the `create_heat_maps.py` file.
 
 By default, our experiments script will setup directories in the Moonshine git repository directory.
-You can change paths by editing the make file and changing the arguments, `--data_path '' --NIST_path '' --Moonshine_path ''` to `--data_path '<path>' --NIST_path '<path>' --Moonshine_path '<path>'`.
+You can change paths by adding any of these arguments to the python command in the sh file, `--data_path '<path>' --NIST_path '<path>' --Moonshine_path '<path>'`.
 
 
 ### Disclaimer

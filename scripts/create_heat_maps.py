@@ -7,7 +7,6 @@ from scipy.stats import entropy
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1 import AxesGrid
-import argparse
 
 data_path = os.environ['DATAPATH']
 '''
