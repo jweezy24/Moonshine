@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include "numutils.h"
 
 
 
@@ -9,8 +10,8 @@ int main(int argc, char *argv[]) {
     int bl = vals->bl;
     int sl = vals->sl;
     int discard = vals->discard;
-    int total_before_mapping = pow_jack(2,bl);
-    int total_after_mapping = pow_jack(2,sl);
+    int total_before_mapping = pow2(bl);
+    int total_after_mapping = pow2(sl);
 
     //Initalizing locals based on the command line arguments
     int j;
@@ -51,26 +52,6 @@ int main(int argc, char *argv[]) {
 
     // We then apply the new mappings we determined prior and generate a new output file.
     translate_new_mappings(judges_list, total_after_mapping, sl, bits, total_bin_nums, outfile);
-}
-
-/*
-Self made power function to avoid importing math.h
-input:
-    a = the base number we want to raise to a power
-    b = The exponent of the number a
-output:
-    a^b as a integer
-*/
-long pow_jack(int a, int b) {
-    long tmp_num = 1;
-    if (b == 0) {
-        return 1;
-    }
-    for(int i = 0; i < b; i++) {
-
-        tmp_num = tmp_num*a;
-    }
-    return tmp_num;
 }
 
 /*
@@ -126,10 +107,11 @@ void form_histogram(char* bits, int len, int bin_len, int* histo_before, int* or
     char* bin_num = malloc(bin_len+1);
     int count = 0;
     int index = 0;
+    int status;
     for(int i = 0; i < len; i++) {
         if(count%bin_len == 0 && i > 0) {
             bin_num[count] = 0;
-            int num = bin_to_int(bin_num);
+            int num = (int) binary_string_to_long(bin_num, &status);
             if(histo_before[num] == 0) {
                 ordering_list[index] = num;
                 index+=1;
@@ -217,10 +199,11 @@ input:
 void translate_new_mappings(int* judges_list, int len, int sl, char* bits, int len2, char* path) {
     char* bin_num = malloc(sl+1);
     int count = 0;
+    int status;
     for(int i = 0; i < len2; i++) {
         if(count%(sl+1) == 0 && i > 0) {
             bin_num[count] = 0;
-            int num = bin_to_int(bin_num);
+            int num = (int) binary_string_to_long(bin_num, &status);
 
 
             int ind = judges_list[num];
@@ -250,25 +233,6 @@ void translate_new_mappings(int* judges_list, int len, int sl, char* bits, int l
 
 }
 
-/*
-This will translate a binary string to a integer.
-input:
-    bin = string of a binary number
-output:
-    integer representation of the binary string.
-*/
-
-long bin_to_int(char* bin) {
-    long ret = 0;
-    int len = strlen(bin);
-    for(int i = 0; i < len; i++) {
-        if(bin[i] == '1') {
-            ret += pow_jack(2,(len-1)-i);
-        }
-    }
-
-    return ret;
-}
 
 /*
 This will translate a integer to a binary string.
@@ -283,46 +247,15 @@ char* int_to_bin(int bin, int size) {
 
     int count = 0;
     for(int i = size-1; i >= 0; i--) {
-        if(bin >= pow_jack(2,i)) {
+        if(bin >= pow2(i)) {
             ret[count] = '1';
-            bin -= pow_jack(2,i);
+            bin -= pow2(i);
         } else {
             ret[count] = '0';
         }
         count+=1;
     }
     ret[size] = 0;
-
-    return ret;
-
-}
-/*
-This method will take a string argument where the number is base 10 and convert the string to a integer.
-input:
-    number = string number in base 10
-output:
-    integer representation of the given string number
-*/
-int str_to_int(char* number) {
-    int count = 0;
-    int ret = 0;
-
-    while(number[count] != 0) {
-        count+=1;
-    }
-
-    int* holder = malloc((count+1) * sizeof(int));
-
-    for(int i =0; i < count; i++) {
-        holder[i] = number[i]- '0';
-    }
-
-
-    for (int i =0; i < count; i++) {
-        ret += pow_jack(10, (count)-(i+1)) * holder[i];
-
-    }
-
 
     return ret;
 
@@ -340,6 +273,7 @@ output:
 cmd* parse_commandline(int argc, char** argv) {
 
     cmd* ret = malloc(sizeof(cmd));
+    int status;
 
     if( argc > 6 ) {
         printf("Too many arguments supplied.\n");
@@ -350,9 +284,9 @@ cmd* parse_commandline(int argc, char** argv) {
         exit(0);
     }
 
-    ret->bl = (int) (str_to_int(argv[1]));
-    ret->sl = (int) (str_to_int(argv[2]));
-    ret->discard = (int) (str_to_int(argv[3]));
+    ret->bl = (int) any_string_to_long(argv[1], 10, &status);
+    ret->sl = (int) any_string_to_long(argv[2], 10, &status);
+    ret->discard = (int) any_string_to_long(argv[3], 10, &status);
 
     ret->filepath = malloc(strlen(argv[4])+1);
 
